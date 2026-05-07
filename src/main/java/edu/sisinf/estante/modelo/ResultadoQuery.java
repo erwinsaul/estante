@@ -1,0 +1,85 @@
+package edu.sisinf.estante.modelo;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ResultadoQuery {
+
+    public enum Tipo {
+        LECTURA,
+        ESCRITURA,
+        ERROR
+    }
+
+    private Tipo tipo;
+    private List<String> columnas;
+    private List<List<Object>> filas;
+    private int filasAfectadas;
+    private long tiempoMs;
+    private String mensaje;
+
+    private ResultadoQuery() {
+        this.columnas = new ArrayList<>();
+        this.filas = new ArrayList<>();
+        this.filasAfectadas = 0;
+    }
+
+    public static ResultadoQuery deLectura(
+            List<String> columnas,
+            List<List<Object>> filas,
+            long tiempoMs
+    ) {
+        ResultadoQuery resultado = new ResultadoQuery();
+        resultado.tipo = Tipo.LECTURA;
+        resultado.columnas = columnas;
+        resultado.filas = filas;
+        resultado.tiempoMs = tiempoMs;
+        return resultado;
+    }
+
+    public static ResultadoQuery deEscritura(
+            int filasAfectadas,
+            long tiempoMs
+    ) {
+        ResultadoQuery resultado = new ResultadoQuery();
+        resultado.tipo = Tipo.ESCRITURA;
+        resultado.filasAfectadas = filasAfectadas;
+        resultado.tiempoMs = tiempoMs;
+        return resultado;
+    }
+
+    public static ResultadoQuery deError(
+            String mensaje,
+            long tiempoMs
+    ) {
+        ResultadoQuery resultado = new ResultadoQuery();
+        resultado.tipo = Tipo.ERROR;
+        resultado.mensaje = mensaje;
+        resultado.tiempoMs = tiempoMs;
+        return resultado;
+    }
+
+    public Tipo getTipo() {
+        return tipo;
+    }
+
+    public List<String> getColumnas() {
+        return columnas;
+    }
+
+    public List<List<Object>> getFilas() {
+        return filas;
+    }
+
+    public int getFilasAfectadas() {
+        return filasAfectadas;
+    }
+
+    public long getTiempoMs() {
+        return tiempoMs;
+    }
+
+    public String getMensaje() {
+        return mensaje;
+    }
+}
