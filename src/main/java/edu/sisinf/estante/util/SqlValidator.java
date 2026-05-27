@@ -4,6 +4,7 @@ import java.util.Locale;
 
 public class SqlValidator {
 
+
     public enum TipoQuery {
         SELECT,
         INSERT,
@@ -91,4 +92,12 @@ public class SqlValidator {
     private static boolean contieneWhere(String query) {
         return normalizar(query).matches("(?s).*\\bWHERE\\b.*");
     }
+    public static boolean esSentenciaValida(String query) {
+    if (query == null) {
+        return false;
+    }
+
+    return !normalizar(query).isEmpty();
+    }
 }
+
