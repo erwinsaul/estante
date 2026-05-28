@@ -86,6 +86,7 @@ public class ConnectionProvider {
         } catch (SQLException e) {
             throw new ErrorQuery("Error al ejecutar la sentencia SELECT: " + e.getMessage(), e);
         } finally {
+             // Cierre seguro de recursos JDBC para evitar fugas de conexión
             if (resultSet != null) {
                 try { resultSet.close(); } catch (SQLException ignored) {}
             }
