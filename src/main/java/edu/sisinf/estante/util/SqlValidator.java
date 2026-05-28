@@ -99,5 +99,22 @@ public class SqlValidator {
 
     return !normalizar(query).isEmpty();
     }
+    // ==================== METODOS INDIVIDUALES REQUERIDOS ====================
+    
+    public static boolean isSelect(String query) {
+        return esLectura(query);
+    }
+
+    public static boolean isInsert(String query) {
+        return tipo(query) == TipoQuery.INSERT;
+    }
+
+    public static boolean isUpdate(String query) {
+        return tipo(query) == TipoQuery.UPDATE;
+    }
+
+    public static boolean isDelete(String query) {
+        return tipo(query) == TipoQuery.DELETE;
+    }
 }
 
