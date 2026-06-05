@@ -2,6 +2,33 @@
 
 Gestor de base de datos con interfaz gráfica desarrollado en Java y JavaFX.
 
+## Características
+
+
+🗄️ **Motores soportados**
+
+* MySQL
+* SQLite
+* PostgreSQL
+
+📤 **Exportación**
+
+* CSV
+* JSON
+* Excel
+
+✍️ **Editor SQL**
+
+* Historial de consultas
+* Favoritos
+* Resaltado de sintaxis
+* Generador de SQL
+
+🛡️ **Seguridad y ejecución**
+
+* Validación de operaciones DML
+* Ejecución asíncrona de consultas
+
 ## ¿Qué es?
 
 Estante es una aplicación que permite conectarse, explorar y administrar bases de datos MySQL mediante una interfaz gráfica intuitiva desarrollada con Java y JavaFX.
@@ -55,5 +82,4 @@ Ver [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Licencia
 MIT — ver [LICENSE](LICENSE)
-## ✨ Cambio final
-README actualizado correctamente.
+
