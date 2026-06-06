@@ -6,6 +6,7 @@ import java.util.List;
 import edu.sisinf.estante.modelo.Esquema;
 import edu.sisinf.estante.modelo.Tabla;
 import edu.sisinf.estante.modelo.Columna;
+import edu.sisinf.estante.modelo.ColumnaInfo;
 import edu.sisinf.estante.core.ErrorQuery;
 
 /**
@@ -94,31 +95,35 @@ public class ExploradorEsquemas {
         }
         return columnas;
     }
-}
-/**
- * Obtiene las columnas de una tabla específica con nombre, tipo, nullable, tamaño y valor por defecto.
- */
-public List<ColumnaInfo> getColumnas(Connection conexion, String tabla) {
-    List<ColumnaInfo> columnas = new ArrayList<>();
-    try {
-        DatabaseMetaData meta = conexion.getMetaData();
+    /**
+     * Obtiene las columnas de una tabla específica con nombre, tipo, nullable, tamaño y valor por defecto.
+     */
+    public List<ColumnaInfo> getColumnas(Connection conexion, String tabla) {
+        List<ColumnaInfo> columnas = new ArrayList<>();
 
-        try (ResultSet rs = meta.getColumns(null, null, tabla, null)) {
-            while (rs.next()) {
-                String nombre = rs.getString("COLUMN_NAME");
-                String tipoSQL = rs.getString("TYPE_NAME");
-                boolean nullable = "YES".equals(rs.getString("IS_NULLABLE"));
-                Integer tamano = rs.getInt("COLUMN_SIZE");
-                if (rs.wasNull()) {
-                    tamano = null;
+        try {
+            DatabaseMetaData meta = conexion.getMetaData();
+
+            try (ResultSet rs = meta.getColumns(null, null, tabla, "%")) {
+                while (rs.next()) {
+                    String nombre = rs.getString("COLUMN_NAME");
+                    String tipoSQL = rs.getString("TYPE_NAME");
+                    boolean nullable = "YES".equals(rs.getString("IS_NULLABLE"));
+
+                    Integer tamano = rs.getInt("COLUMN_SIZE");
+                    if (rs.wasNull()) {
+                        tamano = null;
+                    }
+
+                    String valorDefault = rs.getString("COLUMN_DEF");
+
+                    columnas.add(new ColumnaInfo(nombre, tipoSQL, nullable, tamano, valorDefault));
                 }
-                String valorDefault = rs.getString("COLUMN_DEF");
-
-                columnas.add(new ColumnaInfo(nombre, tipoSQL, nullable, tamano, valorDefault));
             }
+        } catch (SQLException e) {
+            throw new ErrorQuery("No se pudieron obtener las columnas de la tabla " + tabla, e);
         }
-    } catch (SQLException e) {
-        throw new RuntimeException("Error obteniendo columnas de la tabla " + tabla, e);
+
+        return columnas;
     }
-    return columnas;
 }

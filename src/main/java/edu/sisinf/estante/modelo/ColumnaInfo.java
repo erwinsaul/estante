@@ -6,4 +6,4 @@ public record ColumnaInfo(
         boolean nullable,
         Integer tamano,      //"tamaño"
         String valorDefault
-) {}
+) {} 
