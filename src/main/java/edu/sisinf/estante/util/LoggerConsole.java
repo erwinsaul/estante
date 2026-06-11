@@ -21,19 +21,19 @@ public class LoggerConsole {
         return instancia;
     }
 
-    public void info(String mensaje) {
+    public static void info(String mensaje) {
         System.out.println(ahora() + " [INFO] " + mensaje);
     }
 
-    public void warn(String mensaje) {
+    public static void warn(String mensaje) {
         System.out.println(ahora() + " [WARN] " + mensaje);
     }
 
-    public void error(String mensaje) {
-        System.err.println(ahora() + " [ERROR] " + mensaje);
+    public static void error(String mensaje) {
+        System.out.println(ahora() + " [ERROR] " + mensaje);
     }
 
-    private String ahora() {
+    private static String ahora() {
         return "[" + LocalTime.now().format(FORMATO) + "]";
     }
 }
