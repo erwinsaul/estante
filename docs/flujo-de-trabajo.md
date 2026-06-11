@@ -37,6 +37,39 @@ git remote -v  # Verifica que aparezcan origin y upstream
 ```
 
 ---
+### Configuración inicial
+
+Instala los hooks de pre-commit antes de comenzar a trabajar:
+
+```bash
+pre-commit install
+
+
+---
+
+### 2. Agregar verificaciones antes del PR
+
+En la sección **"Cómo hacer commit y push"**, después de `git status` o antes del commit, agrega:
+
+```md
+### Verificaciones obligatorias antes de abrir un PR
+
+Ejecuta las siguientes verificaciones:
+
+```bash
+mvn checkstyle:check
+mvn test
+
+
+---
+
+### 3. Actualizar el flujo de ramas
+
+En la sección **"Resumen del flujo completo"**, reemplaza:
+
+```text
+Fork del repo → Clonar localmente → Crear rama → Hacer cambios
+→ git add → git commit → git push → Abrir Pull Request
 
 ## 2. Cómo crear una rama con captura de pantalla
 
@@ -127,7 +160,7 @@ Un Pull Request (PR) permite proponer tus cambios al repositorio original.
 3. Completa el formulario del PR:
    - **Título:** `docs: agregar guía del flujo de trabajo con Git`
    - **Descripción:** Explica brevemente qué incluye el PR y referencia el issue con `Closes #9`
-   - **Base:** `main` del repositorio `sis-inf/estante`
+   - **Base:** `dev` del repositorio `sis-inf/estante`
    - **Compare:** `docs/flujo-de-trabajo` de tu fork
 
    ![Formulario del Pull Request](./img/pr-formulario.png)
@@ -197,11 +230,26 @@ git commit -m "fix: resolver conflicto de merge en archivo.txt"
 
 ---
 
+```
 ## Resumen del flujo completo
 
-```
-Fork del repo → Clonar localmente → Crear rama → Hacer cambios
-→ git add → git commit → git push → Abrir Pull Request
+Fork
+  ↓
+Crear rama feature
+  ↓
+Realizar cambios
+  ↓
+git add
+  ↓
+git commit
+  ↓
+git push
+  ↓
+Pull Request hacia dev
+  ↓
+Revisión e integración en dev
+  ↓
+Merge hacia main
 ```
 
 | Paso | Comando / Acción |
@@ -215,3 +263,6 @@ Fork del repo → Clonar localmente → Crear rama → Hacer cambios
 | Commit | `git commit -m "tipo: descripción"` |
 | Push | `git push origin nombre-de-la-rama` |
 | Pull Request | Desde GitHub web |
+| Instalar hooks | `pre-commit install` |
+| Checkstyle | `mvn checkstyle:check` |
+| Ejecutar pruebas | `mvn test` |
