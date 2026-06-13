@@ -129,34 +129,34 @@
                 </executions>
             </plugin>
             <plugin>
-+             <groupId>org.apache.maven.plugins</groupId>
-+             <artifactId>maven-checkstyle-plugin</artifactId>
-+             <version>3.6.0</version>                        <!-- wrapper Maven del plugin -->
-+             <dependencies>
-+                 <dependency>
-+                     <groupId>com.puppycrawl.tools</groupId>
-+                     <artifactId>checkstyle</artifactId>
-+                     <version>${checkstyle.version}</version> <!-- motor real; se fija para reproducibilidad -->
-+                 </dependency>
-+             </dependencies>
-+             <configuration>
-+                 <configLocation>google_checks.xml</configLocation>     <!-- ruleset built-in, no requiere archivo local -->
-+                 <consoleOutput>true</consoleOutput>                     <!-- muestra violaciones en la terminal -->
-+                 <failsOnError>false</failsOnError>                      <!-- no bloquea el build (fase inicial) -->
-+                 <violationSeverity>warning</violationSeverity>          <!-- trata todo como advertencia -->
-+                 <outputFile>${project.build.directory}/checkstyle-result.xml</outputFile>  <!-- ruta del reporte XML -->
-+                 <outputFileFormat>xml</outputFileFormat>                <!-- formato para que CI lo suba como artefacto -->
-+                 <includeTestSourceDirectory>true</includeTestSourceDirectory>  <!-- también analiza src/test/java -->
-+                 <checkstyleRules>
-+                     <module name="Checker">
-+                         <property name="severity" value="warning"/>
-+                         <module name="LineLength">
-+                             <property name="max" value="120"/>          <!-- override: 120 en vez de los 100 del estándar Google -->
-+                         </module>
-+                     </module>
-+                 </checkstyleRules>
-+             </configuration>
-+         </plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-checkstyle-plugin</artifactId>
+              <version>3.6.0</version>                        <!-- wrapper Maven del plugin -->
+              <dependencies>
+                  <dependency>
+                      <groupId>com.puppycrawl.tools</groupId>
+                      <artifactId>checkstyle</artifactId>
+                      <version>${checkstyle.version}</version> <!-- motor real; se fija para reproducibilidad -->
+                  </dependency>
+              </dependencies>
+              <configuration>
+                  <configLocation>google_checks.xml</configLocation>     <!-- ruleset built-in, no requiere archivo local -->
+                  <consoleOutput>true</consoleOutput>                     <!-- muestra violaciones en la terminal -->
+                  <failsOnError>false</failsOnError>                      <!-- no bloquea el build (fase inicial) -->
+                  <violationSeverity>warning</violationSeverity>          <!-- trata todo como advertencia -->
+                  <outputFile>${project.build.directory}/checkstyle-result.xml</outputFile>  <!-- ruta del reporte XML -->
+                  <outputFileFormat>xml</outputFileFormat>                <!-- formato para que CI lo suba como artefacto -->
+                  <includeTestSourceDirectory>true</includeTestSourceDirectory>  <!-- también analiza src/test/java -->
+                  <checkstyleRules>
+                      <module name="Checker">
+                          <property name="severity" value="warning"/>
+                          <module name="LineLength">
+                              <property name="max" value="120"/>          <!-- override: 120 en vez de los 100 del estándar Google -->
+                          </module>
+                      </module>
+                  </checkstyleRules>
+              </configuration>
+          </plugin>
         </plugins>
     </build>
 </project>
