@@ -1,9 +1,12 @@
 package edu.sisinf.estante.controller;
 
+import edu.sisinf.estante.modelo.ResultadoQuery;
+import edu.sisinf.estante.servicio.EjecutorQueryAsync;
 import edu.sisinf.estante.util.SqlValidator;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import org.fxmisc.richtext.CodeArea;
@@ -17,9 +20,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Controller del panel editor SQL con resaltado de sintaxis básico.
- * Usa RichTextFX CodeArea para mostrar keywords SQL en azul,
- * strings en verde y comentarios en gris.
+ * Controller del panel editor SQL con resaltado de sintaxis y ejecución asíncrona.
+ * Usa RichTextFX CodeArea para resaltado SQL y EjecutorQueryAsync para no bloquear la UI.
  */
 public class PanelEditorSQLController {
 
@@ -42,8 +44,11 @@ public class PanelEditorSQLController {
     @FXML private Button btnLimpiar;
     @FXML private Label labelConexionActiva;
     @FXML private CodeArea areaSQL;
+    @FXML private ProgressIndicator spinnerEjecucion;
 
     private Consumer<String> onEjecutar;
+    private Consumer<ResultadoQuery> onResultado;
+    private Consumer<Throwable> onError;
 
     /**
      * Inicializa el controller conectando los botones y el resaltado de sintaxis.
@@ -53,6 +58,8 @@ public class PanelEditorSQLController {
         btnLimpiar.setOnAction(e -> areaSQL.clear());
         btnEjecutar.setOnAction(e -> disparar());
 
+        spinnerEjecucion.setVisible(false);
+
         areaSQL.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (event.getCode() == KeyCode.ENTER && event.isControlDown()) {
                 event.consume();
@@ -60,12 +67,10 @@ public class PanelEditorSQLController {
             }
         });
 
-        // Resaltado de sintaxis en tiempo real
         areaSQL.textProperty().addListener((obs, oldText, newText) ->
             areaSQL.setStyleSpans(0, calcularResaltado(newText))
         );
 
-        // CSS inline para los estilos
         areaSQL.getStylesheets().add(
             "data:text/css," +
             ".keyword { -fx-fill: #0000cc; -fx-font-weight: bold; }" +
@@ -74,9 +79,6 @@ public class PanelEditorSQLController {
         );
     }
 
-    /**
-     * Calcula los StyleSpans para resaltar keywords, strings y comentarios.
-     */
     private StyleSpans<Collection<String>> calcularResaltado(String texto) {
         Matcher matcher = PATRON.matcher(texto);
         StyleSpansBuilder<Collection<String>> builder = new StyleSpansBuilder<>();
@@ -98,10 +100,24 @@ public class PanelEditorSQLController {
     }
 
     /**
-     * Registra el callback que se invoca al ejecutar una query.
+     * Registra el callback que se invoca al ejecutar una query (modo sincrónico legacy).
      */
     public void setOnEjecutar(Consumer<String> callback) {
         this.onEjecutar = callback;
+    }
+
+    /**
+     * Registra el callback invocado cuando la query termina exitosamente (modo async).
+     */
+    public void setOnResultado(Consumer<ResultadoQuery> callback) {
+        this.onResultado = callback;
+    }
+
+    /**
+     * Registra el callback invocado cuando la query falla (modo async).
+     */
+    public void setOnError(Consumer<Throwable> callback) {
+        this.onError = callback;
     }
 
     /**
@@ -119,19 +135,39 @@ public class PanelEditorSQLController {
     }
 
     /**
-     * Dispara el callback si el texto no está vacío.
+     * Dispara la ejecución mostrando el spinner y deshabilitando el botón.
      */
     private void disparar() {
         String texto = areaSQL.getText();
-        if (texto.isBlank() || onEjecutar == null) {
-            return;
-        }
+        if (texto.isBlank()) return;
+
         if (SqlValidator.esDestructiva(texto)) {
             boolean confirmar = DialogoConfirmacionDML.confirmar(texto);
-            if (!confirmar) {
-                return;
-            }
+            if (!confirmar) return;
         }
-        onEjecutar.accept(texto);
+
+        // Mostrar spinner y deshabilitar botón
+        spinnerEjecucion.setVisible(true);
+        btnEjecutar.setDisable(true);
+
+        if (onResultado != null) {
+            // Modo asíncrono — el caller conectó setOnResultado
+            if (onEjecutar != null) {
+                onEjecutar.accept(texto);
+            }
+        } else if (onEjecutar != null) {
+            // Modo legado sincrónico
+            onEjecutar.accept(texto);
+            ocultarSpinner();
+        }
+    }
+
+    /**
+     * Oculta el spinner y rehabilita el botón Ejecutar.
+     * Debe llamarse desde el hilo de la UI al finalizar la ejecución.
+     */
+    public void ocultarSpinner() {
+        spinnerEjecucion.setVisible(false);
+        btnEjecutar.setDisable(false);
     }
 }
