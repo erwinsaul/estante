@@ -55,3 +55,62 @@ Este documento describe las interacciones entre los actores y el motor de base d
   1. El sistema realiza un listado general de las tablas.
   2. Se comparan los contadores de registros con los índices.
   3. Se reporta el estado de salud de la base de datos.
+## 3. Casos de Uso Agregados en el Sprint
+
+### CU-Hist-01: Relanzamiento de Consulta desde Historial
+
+* **Actor:** Gestor de Consultas
+* **Precondición:** Existe al menos una consulta almacenada en el historial de ejecución.
+* **Flujo Principal:**
+
+  1. El usuario accede al módulo de historial.
+  2. El sistema muestra las consultas ejecutadas anteriormente.
+  3. El usuario selecciona una consulta del historial.
+  4. El sistema carga la consulta seleccionada en el editor SQL.
+  5. El usuario ejecuta nuevamente la consulta.
+  6. El sistema procesa la consulta y muestra los resultados obtenidos.
+* **Postcondición:** La consulta seleccionada es ejecutada nuevamente y sus resultados quedan disponibles para el usuario.
+
+### CU-Fav-01: Guardar Consulta como Favorita
+
+* **Actor:** Gestor de Consultas
+* **Precondición:** El usuario dispone de una consulta SQL válida que desea conservar para uso posterior.
+* **Flujo Principal:**
+
+  1. El usuario selecciona la opción para guardar una consulta como favorita.
+  2. El sistema solicita un nombre descriptivo para identificar la consulta.
+  3. El usuario introduce el nombre deseado.
+  4. El sistema verifica que no exista otro favorito registrado con el mismo nombre.
+  5. El sistema almacena la consulta junto con su información asociada.
+  6. El sistema confirma que la operación fue realizada correctamente.
+* **Postcondición:** La consulta queda registrada en la lista de favoritos y puede recuperarse posteriormente.
+
+### CU-Import-01: Importación de Datos desde Archivo CSV
+
+* **Actor:** DBA
+* **Precondición:** Existe una conexión activa a la base de datos, una tabla destino disponible y un archivo CSV válido.
+* **Flujo Principal:**
+
+  1. El usuario selecciona la opción de importar datos.
+  2. El usuario indica el archivo CSV que desea cargar.
+  3. El sistema lee las cabeceras del archivo.
+  4. El usuario selecciona la tabla destino.
+  5. El sistema procesa cada fila del archivo.
+  6. El sistema inserta los registros válidos en la tabla correspondiente.
+  7. El sistema registra cualquier error encontrado durante el proceso de importación.
+  8. El sistema muestra un resumen de registros importados y registros fallidos.
+* **Postcondición:** Los datos válidos del archivo CSV son incorporados a la tabla seleccionada y se genera un resultado de la importación.
+
+### CU-Export-02: Exportación de Resultados para Análisis
+
+* **Actor:** Analista
+* **Precondición:** Existe un resultado de consulta disponible para exportación.
+* **Flujo Principal:**
+
+  1. El analista ejecuta una consulta sobre la base de datos.
+  2. El sistema muestra los resultados obtenidos.
+  3. El analista selecciona la opción de exportar resultados.
+  4. El sistema genera un archivo con la información obtenida.
+  5. El usuario selecciona la ubicación donde desea guardar el archivo.
+  6. El sistema completa la operación de exportación.
+* **Postcondición:** Los resultados de la consulta quedan almacenados en un archivo externo para su análisis posterior.
