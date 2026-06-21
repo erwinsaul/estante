@@ -4,6 +4,8 @@
 // ============================================================
 package edu.sisinf.estante.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -90,5 +92,46 @@ public class ValidadorSQL {
      */
     public static boolean esSentenciaValida(String sql) {
         return sql != null && !sql.strip().isEmpty();
+    }
+    
+     /**
+     * Valida la sentencia SQL y devuelve una lista de errores encontrados.
+     *
+     * @param sql sentencia SQL a validar
+     * @return lista de errores; vacía si no se detectan errores
+     */
+    public static List<String> validar(String sql) {
+        List<String> errores = new ArrayList<>();
+
+        if (sql == null || sql.strip().isEmpty()) {
+            errores.add("La sentencia SQL está vacía.");
+            return errores;
+        }
+
+        String texto = sql.strip().toUpperCase();
+
+        if (texto.equals("SELECT")) {
+            errores.add("La sentencia SELECT está incompleta.");
+        }
+
+        if (texto.equals("SELECT FROM")) {
+            errores.add(
+                "La sentencia SELECT no especifica columnas ni tabla."
+            );
+        }
+
+        if (texto.equals("INSERT")) {
+            errores.add("La sentencia INSERT está incompleta.");
+        }
+
+        if (texto.equals("UPDATE")) {
+            errores.add("La sentencia UPDATE está incompleta.");
+        }
+
+        if (texto.equals("DELETE")) {
+            errores.add("La sentencia DELETE está incompleta.");
+        }
+
+        return errores;
     }
 }
