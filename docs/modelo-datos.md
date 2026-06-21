@@ -127,6 +127,77 @@ Registra eventos y operaciones realizadas dentro del sistema.
 
 ---
 
+## 2.7. FavoritoQuery
+
+Representa una consulta SQL guardada como favorita por el usuario para reutilizarla. Se implementa como un `record` inmutable (`edu.sisinf.estante.modelo.FavoritoQuery`).
+
+| Atributo | Tipo | Descripción |
+|---|---|---|
+| nombre | VARCHAR | Nombre descriptivo asignado al favorito |
+| sql | TEXT | Sentencia SQL guardada |
+| motor | VARCHAR | Motor de base de datos al que corresponde la consulta (relacionado con `TipoMotor`) |
+| fecha_creacion | TIMESTAMP | Fecha de creación del favorito |
+
+### Claves
+
+- No tiene identificador propio en el modelo actual (objeto de valor inmutable).
+- Relación lógica: `motor -> TipoMotor` (valor textual correspondiente a uno de los valores del enum `TipoMotor`: `SQLITE`, `MYSQL`, `POSTGRESQL`).
+
+### Validaciones
+
+- `nombre` no puede ser nulo ni estar vacío.
+- `sql` no puede ser nulo ni estar vacío.
+- `motor` no puede ser nulo ni estar vacío.
+- Si no se especifica `fecha_creacion`, se asigna automáticamente la fecha y hora actuales.
+
+---
+
+## 2.8. EntradaHistorial
+
+Registra una query ejecutada durante la sesión, incluyendo su resultado y rendimiento. Se implementa como un `record` inmutable (`edu.sisinf.estante.modelo.EntradaHistorial`).
+
+| Atributo | Tipo | Descripción |
+|---|---|---|
+| timestamp | BIGINT | Momento de ejecución de la query (epoch en milisegundos) |
+| query | TEXT | Sentencia SQL ejecutada |
+| base_datos | VARCHAR | Nombre de la base de datos o conexión activa al momento de ejecutar |
+| duracion_ms | BIGINT | Tiempo de ejecución de la query, en milisegundos |
+| exitosa | BOOLEAN | Indica si la query se ejecutó sin errores |
+
+### Claves
+
+- No tiene identificador propio en el modelo actual (objeto de valor inmutable).
+- No posee FK explícita: a diferencia de `Historial` (que se asocia a un `Usuario`), `EntradaHistorial` se genera automáticamente por el sistema cada vez que se ejecuta una consulta, sin intervención manual del usuario.
+
+### Notas
+
+- A diferencia de `ConsultaSQL` y `Historial`, que el usuario crea o consulta explícitamente, `EntradaHistorial` es producida automáticamente por el motor de ejecución de queries como subproducto de cada ejecución.
+
+---
+
+## 2.9. ColumnaInfo
+
+Representa la metadata de una columna de una tabla, obtenida en tiempo real desde el motor de base de datos mediante JDBC (`DatabaseMetaData`). Se implementa como un `record` inmutable (`edu.sisinf.estante.modelo.ColumnaInfo`).
+
+| Atributo | Tipo | Descripción |
+|---|---|---|
+| nombre | VARCHAR | Nombre de la columna |
+| tipo_sql | VARCHAR | Tipo de dato SQL reportado por el motor (`TYPE_NAME`) |
+| nullable | BOOLEAN | Indica si la columna admite valores nulos |
+| tamano | INT | Tamaño/longitud de la columna (puede ser nulo si el motor no lo reporta) |
+| valor_default | VARCHAR | Valor por defecto de la columna, si existe |
+
+### Claves
+
+- No tiene identificador propio ni se persiste en base de datos propia: es un objeto de valor calculado al vuelo.
+- Relación lógica: `ColumnaInfo` es producido por `ExploradorEsquemas.getColumnas(Connection, tabla)`, que consulta los metadatos JDBC de una `Tabla` y construye una lista de `ColumnaInfo` por cada columna encontrada.
+
+### Notas
+
+- Esta entidad no proviene de una tabla propia del sistema, sino que se construye dinámicamente a partir de los metadatos de la base de datos externa a la que el usuario se conecta.
+
+---
+
 # 3. Relaciones entre Entidades
 
 ## Usuario → Conexion
@@ -178,6 +249,33 @@ Registra eventos y operaciones realizadas dentro del sistema.
 
 - Un usuario puede generar múltiples eventos.
 - Cada evento pertenece a un único usuario.
+
+**Cardinalidad:** `1:N`
+
+---
+
+## TipoMotor → FavoritoQuery
+
+- Un favorito guardado tiene siempre un motor de base de datos asociado (campo `motor`, con los valores del enum `TipoMotor`: `SQLITE`, `MYSQL`, `POSTGRESQL`).
+- Un mismo motor puede estar asociado a múltiples favoritos guardados.
+
+**Cardinalidad:** `1:N`
+
+---
+
+## Sistema → EntradaHistorial
+
+- El sistema genera automáticamente una `EntradaHistorial` cada vez que se ejecuta una consulta SQL, sin que el usuario la cree de forma manual.
+- Cada ejecución de query produce exactamente una entrada de historial.
+
+**Cardinalidad:** `1:N` (de "ejecución del sistema" hacia entradas generadas)
+
+---
+
+## ExploradorEsquemas → ColumnaInfo
+
+- `ExploradorEsquemas` consulta los metadatos JDBC de una tabla y produce una lista de `ColumnaInfo`, una por cada columna existente en esa tabla.
+- Cada `ColumnaInfo` es producida por exactamente una operación de exploración de esquema (`getColumnas`).
 
 **Cardinalidad:** `1:N`
 
@@ -237,9 +335,40 @@ erDiagram
         TIMESTAMP fecha_evento
     }
 
+    TIPOMOTOR {
+        VARCHAR valor "SQLITE, MYSQL, POSTGRESQL"
+    }
+
+    FAVORITOQUERY {
+        VARCHAR nombre
+        TEXT sql
+        VARCHAR motor FK
+        TIMESTAMP fecha_creacion
+    }
+
+    ENTRADAHISTORIAL {
+        BIGINT timestamp
+        TEXT query
+        VARCHAR base_datos
+        BIGINT duracion_ms
+        BOOLEAN exitosa
+    }
+
+    COLUMNAINFO {
+        VARCHAR nombre
+        VARCHAR tipo_sql
+        BOOLEAN nullable
+        INT tamano
+        VARCHAR valor_default
+    }
+
     USUARIO ||--o{ CONEXION : posee
     CONEXION ||--o{ BASEDEDATOS : contiene
     BASEDEDATOS ||--o{ TABLA : incluye
     USUARIO ||--o{ CONSULTASQL : ejecuta
     CONEXION ||--o{ CONSULTASQL : utiliza
     USUARIO ||--o{ HISTORIAL : genera
+    TIPOMOTOR ||--o{ FAVORITOQUERY : tiene_un_motor
+    CONSULTASQL ||--o{ ENTRADAHISTORIAL : se_genera_automaticamente
+    TABLA ||--o{ COLUMNAINFO : explorada_por
+```
