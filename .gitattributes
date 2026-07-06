@@ -1,5 +1,7 @@
 # Normalizar finales de línea a LF en archivos de texto
-* text=auto
+* text=auto eol=lf
+
+# Archivos de código y configuración
 *.java text eol=lf
 *.xml text eol=lf
 *.fxml text eol=lf
