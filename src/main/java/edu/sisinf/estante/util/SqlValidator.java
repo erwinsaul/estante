@@ -131,4 +131,3 @@ public class SqlValidator {
         return tipo(query) == TipoQuery.DELETE;
     }
 }
-
