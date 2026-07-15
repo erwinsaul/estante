@@ -14,3 +14,4 @@
 *.jpeg binary
 *.gif binary
 *.ico binary
+# Forzar terminadores de línea LF - Issue #531
