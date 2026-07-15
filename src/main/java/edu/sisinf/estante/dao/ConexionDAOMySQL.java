@@ -11,12 +11,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementación concreta de {@link IConexionDAO} para MySQL.
  */
 public class ConexionDAOMySQL implements IConexionDAO {
-
+    private static final Logger logger = LoggerFactory.getLogger(ConexionDAOMySQL.class);
     private static final String PUERTO_DEFAULT = "3306";
     private static final String PARAMS_BASE =
             "serverTimezone=UTC&allowPublicKeyRetrieval=true";
@@ -91,11 +93,12 @@ public class ConexionDAOMySQL implements IConexionDAO {
         return tablas;
     }
 
-    @Override
+   @Override
     public boolean probar(Conexion conexion) {
         try (Connection conn = abrir(conexion)) {
             return conn.isValid(3);
         } catch (Exception e) {
+            logger.error("Error al probar la conexión con MySQL para host: {}", conexion.getHost(), e);
             return false;
         }
     }
