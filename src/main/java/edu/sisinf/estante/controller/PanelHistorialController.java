@@ -24,7 +24,7 @@ import java.util.function.Consumer;
  *
  * <p>Archivos relacionados:</p>
  * <ul>
- *   <li>Vista: {@code src/main/resources/edu/sisinf/estante/fxml/PanelHistorial.fxml}</li>
+ *   <li>Vista: {@code src/main/resources/fxml/PanelHistorial.fxml}</li>
  * </ul>
  */
 public class PanelHistorialController {
