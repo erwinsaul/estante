@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementación concreta de {@link IConexionDAO} para SQLite.
@@ -19,6 +21,7 @@ import java.util.List;
  * La clase es stateless: no almacena conexiones internamente.
  */
 public class ConexionDAOSQLite implements IConexionDAO {
+    private static final Logger logger = LoggerFactory.getLogger(ConexionDAOSQLite.class);
 
     /**
      * Devuelve el motor de base de datos que maneja esta implementación.
@@ -94,8 +97,9 @@ public class ConexionDAOSQLite implements IConexionDAO {
     @Override
     public boolean probar(Conexion conexion) {
         try (Connection conn = abrir(conexion)) {
-            return conn.isValid(2);
+            return conn.isValid(3);
         } catch (Exception e) {
+            logger.error("Error al probar la conexión con SQLite en: {}", conexion.getBaseDatos(), e);
             return false;
         }
     }

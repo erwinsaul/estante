@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementación concreta de {@link IConexionDAO} para PostgreSQL.
@@ -19,7 +21,7 @@ import java.util.List;
  * y no implementa pooling de conexiones.
  */
 public class ConexionDAOPostgreSQL implements IConexionDAO {
-
+    private static final Logger logger = LoggerFactory.getLogger(ConexionDAOPostgreSQL.class);
     private static final String PUERTO_DEFAULT = "5432";
 
     /**
@@ -107,8 +109,9 @@ public class ConexionDAOPostgreSQL implements IConexionDAO {
     public boolean probar(Conexion conexion) {
         try (Connection conn = abrir(conexion)) {
             return conn.isValid(3);
-        } catch (Exception e) {
-            return false;
-        }
+       } catch (Exception e) {
+         logger.error("Error al probar la conexión con PostgreSQL para host: {}", conexion.getHost(), e);
+         return false;
+      }
     }
 }
