@@ -11,12 +11,14 @@ import java.util.List;
 // Importaciones basadas en los issues bloqueantes #115 y #118
 import edu.sisinf.estante.modelo.ResultadoQuery;
 import edu.sisinf.estante.util.SqlValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Servicio centralizado para la ejecución de consultas SQL.
  */
 public class EjecutorQuery {
-
+private static final Logger logger = LoggerFactory.getLogger(EjecutorQuery.class);
     /**
      * Ejecuta una consulta SQL en la conexión proporcionada sin alterar el ciclo de vida de la conexión.
      *
@@ -76,9 +78,10 @@ public class EjecutorQuery {
                 }
             }
 
-        } catch (SQLException e) {
-            // 4. Manejo de errores: Capturar y traducir sin propagar al consumidor
+       } catch (SQLException e) {
+            // 4. Manejo de errores: Registrar el error con SLF4J
             long tiempoMs = System.currentTimeMillis() - tiempoInicio;
+            logger.error("Error al ejecutar la consulta SQL: {}", sql, e);
             return ResultadoQuery.deError(e.getMessage(), tiempoMs);
         }
     }
