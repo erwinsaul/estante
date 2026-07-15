@@ -4,6 +4,7 @@ public record ColumnaInfo(
         String nombre,
         String tipoSQL,
         boolean nullable,
-        Integer tamano,      //"tamaño"
-        String valorDefault
-) {} 
+        Integer tamano,
+        String valorDefault,
+        boolean esPrimaryKey
+) {}
