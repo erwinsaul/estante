@@ -1,0 +1,345 @@
+Guía del patrón DAO y cómo agregar soporte a un nuevo motor
+
+Introducción
+
+El proyecto estante utiliza el patrón DAO (Data Access Object) para desacoplar la lógica de acceso a datos de la lógica principal de la aplicación. Este enfoque permite trabajar con distintos motores de bases de datos mediante una interfaz común denominada "IConexionDAO".
+
+Actualmente el sistema soporta los motores MySQL, SQLite y PostgreSQL. Cada implementación concreta encapsula los detalles específicos de conexión y configuración del motor correspondiente, permitiendo que el resto de la aplicación interactúe con una API consistente.
+
+Esta guía describe el propósito de "IConexionDAO", las implementaciones existentes y el procedimiento para agregar soporte a un nuevo motor, como Oracle o SQL Server.
+
+---
+
+Interfaz IConexionDAO
+
+La interfaz "IConexionDAO" define el contrato que deben implementar todos los motores soportados por la aplicación.
+
+Todos los motores deben proporcionar una implementación consistente de los métodos necesarios para establecer y administrar conexiones.
+
+Métodos y propósito
+
+"conectar()"
+
+Propósito:
+
+Establece una conexión activa con la base de datos configurada.
+
+Responsabilidades:
+
+- Inicializar el driver JDBC.
+- Crear la conexión.
+- Validar parámetros de conexión.
+- Retornar una conexión válida.
+
+---
+
+"desconectar()"
+
+Propósito:
+
+Cerrar correctamente la conexión activa.
+
+Responsabilidades:
+
+- Liberar recursos abiertos.
+- Evitar pérdidas de memoria.
+- Cerrar conexiones pendientes.
+
+---
+
+"obtenerConexion()"
+
+Propósito:
+
+Retornar la instancia actual de conexión.
+
+Responsabilidades:
+
+- Proporcionar acceso a la conexión existente.
+- Evitar crear conexiones innecesarias.
+
+---
+
+"estaConectado()"
+
+Propósito:
+
+Indicar si existe una conexión activa.
+
+Responsabilidades:
+
+- Verificar el estado actual.
+- Facilitar validaciones antes de ejecutar operaciones.
+
+---
+
+"configurar(...)"
+
+Propósito:
+
+Recibir y almacenar parámetros necesarios para establecer la conexión.
+
+Parámetros típicos:
+
+- Host
+- Puerto
+- Nombre de base de datos
+- Usuario
+- Contraseña
+
+---
+
+Implementaciones existentes
+
+Actualmente el sistema soporta los siguientes motores:
+
+Motor| Clase| URL JDBC| Driver
+MySQL| "MySQLConexionDAO"| "jdbc:mysql://host:puerto/db"| "com.mysql.cj.jdbc.Driver"
+SQLite| "SQLiteConexionDAO"| "jdbc:sqlite:ruta.db"| "org.sqlite.JDBC"
+PostgreSQL| "PostgreSQLConexionDAO"| "jdbc:postgresql://host:puerto/db"| "org.postgresql.Driver"
+
+Descripción de cada implementación
+
+MySQL
+
+Implementación utilizada para bases de datos MySQL. Requiere un host, puerto y credenciales de acceso.
+
+Ejemplo:
+
+jdbc:mysql://localhost:3306/estante
+
+---
+
+SQLite
+
+Implementación basada en archivos locales. No requiere servidor independiente.
+
+Ejemplo:
+
+jdbc:sqlite:estante.db
+
+---
+
+PostgreSQL
+
+Implementación orientada a entornos donde se requieren capacidades avanzadas de SQL y mayor escalabilidad.
+
+Ejemplo:
+
+jdbc:postgresql://localhost:5432/estante
+
+---
+
+Cómo agregar un nuevo motor
+
+Para agregar soporte a un nuevo motor de base de datos se recomienda seguir los siguientes pasos.
+
+Paso 1: Implementar IConexionDAO
+
+Crear una nueva clase que implemente "IConexionDAO".
+
+Ejemplo:
+
+public class OracleConexionDAO implements IConexionDAO {
+
+    private Connection conexion;
+
+    @Override
+    public void conectar() {
+        // Implementación
+    }
+
+    @Override
+    public void desconectar() {
+        // Implementación
+    }
+
+    @Override
+    public Connection obtenerConexion() {
+        return conexion;
+    }
+
+}
+
+La nueva clase debe respetar el contrato definido por la interfaz y manejar adecuadamente errores y excepciones.
+
+---
+
+Paso 2: Agregar el nuevo valor al enum TipoMotor
+
+Si el proyecto utiliza un enum para identificar motores disponibles, agregar el nuevo elemento:
+
+public enum TipoMotor {
+    MYSQL,
+    SQLITE,
+    POSTGRESQL,
+    ORACLE
+}
+
+Esto permitirá que el resto del sistema reconozca el nuevo motor.
+
+---
+
+Paso 3: Agregar el driver al pom.xml
+
+Debe incluirse la dependencia JDBC correspondiente.
+
+Ejemplo para Oracle:
+
+<dependency>
+    <groupId>com.oracle.database.jdbc</groupId>
+    <artifactId>ojdbc11</artifactId>
+    <version>23.3.0.23.09</version>
+</dependency>
+
+Verificar siempre la versión compatible con el proyecto.
+
+---
+
+Paso 4: Actualizar la factory
+
+La factory responsable de crear implementaciones deberá reconocer el nuevo motor.
+
+Ejemplo:
+
+public class ConexionFactory {
+
+    public static IConexionDAO crear(TipoMotor motor) {
+
+        switch(motor) {
+
+            case MYSQL:
+                return new MySQLConexionDAO();
+
+            case SQLITE:
+                return new SQLiteConexionDAO();
+
+            case POSTGRESQL:
+                return new PostgreSQLConexionDAO();
+
+            case ORACLE:
+                return new OracleConexionDAO();
+
+            default:
+                throw new IllegalArgumentException(
+                    "Motor no soportado"
+                );
+        }
+
+    }
+
+}
+
+Con esto la aplicación podrá instanciar automáticamente el nuevo tipo de conexión.
+
+---
+
+Ejemplo completo para Oracle
+
+A continuación se muestra un ejemplo completo de implementación para Oracle.
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class OracleConexionDAO implements IConexionDAO {
+
+    private Connection conexion;
+
+    private String host;
+    private String puerto;
+    private String baseDatos;
+    private String usuario;
+    private String password;
+
+    @Override
+    public void configurar(
+            String host,
+            String puerto,
+            String baseDatos,
+            String usuario,
+            String password
+    ) {
+
+        this.host = host;
+        this.puerto = puerto;
+        this.baseDatos = baseDatos;
+        this.usuario = usuario;
+        this.password = password;
+
+    }
+
+    @Override
+    public void conectar() {
+
+        try {
+
+            Class.forName(
+                "oracle.jdbc.OracleDriver"
+            );
+
+            String url =
+                "jdbc:oracle:thin:@"
+                + host
+                + ":"
+                + puerto
+                + ":"
+                + baseDatos;
+
+            conexion = DriverManager.getConnection(
+                url,
+                usuario,
+                password
+            );
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(
+                "Error al conectar con Oracle",
+                e
+            );
+
+        }
+
+    }
+
+    @Override
+    public void desconectar() {
+
+        try {
+
+            if (conexion != null) {
+                conexion.close();
+            }
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(e);
+
+        }
+
+    }
+
+    @Override
+    public Connection obtenerConexion() {
+        return conexion;
+    }
+
+    @Override
+    public boolean estaConectado() {
+
+        return conexion != null;
+
+    }
+
+}
+
+Este ejemplo puede utilizarse como base para implementar otros motores como SQL Server, MariaDB o cualquier sistema compatible con JDBC.
+
+---
+
+Resumen
+
+El patrón DAO permite mantener independencia entre la lógica de negocio y la tecnología de persistencia utilizada. Gracias a "IConexionDAO", agregar nuevos motores requiere únicamente implementar la interfaz, registrar el nuevo tipo, agregar dependencias y actualizar la factory correspondiente.
+
+Seguir estos pasos mantiene la arquitectura extensible y reduce el impacto de futuras incorporaciones.
